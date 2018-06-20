@@ -1,0 +1,8 @@
+[package]
+name = "rust_util"
+version = "0.1.0"
+authors = ["Chris Saunders <csaunders@illumina.com>"]
+
+[dependencies]
+approx = "*"
+num = '*'
