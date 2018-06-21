@@ -1,12 +1,11 @@
-#[cfg(test)]
-#[macro_use]
-extern crate approx;
+
 extern crate num;
 
 use num::{Integer, PrimInt, Unsigned};
 
 use std::mem::size_of;
 use std::ops::{Shl, Shr};
+
 
 /// Compress integer input so that higher resolution is preserved for
 /// values near zero, while reducing systematic bias between input and
@@ -27,8 +26,8 @@ use std::ops::{Shl, Shr};
 ///
 /// Example: For bit_count=3 and input=67:
 ///
-/// input  is 67 or 0b1000011
-/// output is 72 or 0b1001000
+/// input  is 67 (0b1000011)
+/// output is 72 (0b1001000)
 ///
 /// Here the top three bits are preserved "0b100XXXX", and the suffix "0bXXX1000" is
 /// replaced on the lower bits to create the compressed output.
@@ -37,7 +36,7 @@ use std::ops::{Shl, Shr};
 ///
 pub fn compress_int<T>(input: T, bit_count: u32) -> T
 where
-    T: Integer + PrimInt + Unsigned + Shl<u32, Output = T> + Shr<u32, Output = T> + Into<u32>,
+    T: Integer + PrimInt + Unsigned + Shl<u32, Output = T> + Shr<u32, Output = T>,
 {
     assert!(bit_count > 0);
 
@@ -57,11 +56,11 @@ where
     // scheme 2: suffix is 0b01111...
     let mut suffix = T::one() << (shift - 1);
 
-    if ((if bit_count == 1 {
-        shift
+    if (if bit_count == 1 {
+        shift.trailing_zeros()
     } else {
-        prefix.clone().into()
-    }) & 0b1) == 1
+        prefix.trailing_zeros()
+    }) == 0
     {
         suffix = suffix - T::one();
     }
@@ -69,6 +68,10 @@ where
     (prefix << shift) | suffix
 }
 
+
+#[cfg(test)]
+#[macro_use]
+extern crate approx;
 
 #[cfg(test)]
 mod tests {
@@ -90,9 +93,9 @@ mod tests {
             assert_eq!(compress_int(i, bit_count), 18);
         }
 
-        //let test_val : u64 = 123_039_843_249;
-        //let expect : u64  = 128_849_018_879;
-        //assert_eq!(compress_int(test_val, bit_count), expect);
+        let test_val : u64 = 123_039_843_249;
+        let expect : u64  = 128_849_018_879;
+        assert_eq!(compress_int(test_val, bit_count), expect);
 
         // example in function doc:
         assert_eq!(compress_int(67u32,bit_count), 72u32);
