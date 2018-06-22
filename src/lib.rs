@@ -79,7 +79,7 @@ mod tests {
 
     #[test]
     fn test_compression() {
-        let bit_count : u32 = 3;
+        let bit_count: u32 = 3;
         for i in 0u32..8u32 {
             assert_eq!(compress_int(i, bit_count), i);
         }
@@ -93,26 +93,26 @@ mod tests {
             assert_eq!(compress_int(i, bit_count), 18);
         }
 
-        let test_val : u64 = 123_039_843_249;
-        let expect : u64  = 128_849_018_879;
+        let test_val: u64 = 123_039_843_249;
+        let expect: u64 = 128_849_018_879;
         assert_eq!(compress_int(test_val, bit_count), expect);
 
         // example in function doc:
-        assert_eq!(compress_int(67u32,bit_count), 72u32);
+        assert_eq!(compress_int(67u32, bit_count), 72u32);
     }
 
     #[test]
     fn test_bias() {
-        let bit_count : u32 = 2;
-        let n : u32 = 1024;
-        let eps : f64 = 0.000_001;
+        let bit_count: u32 = 2;
+        let n: u32 = 1024;
+        let eps: f64 = 0.000_001;
 
-        let mut sum : f64 = 0.;
+        let mut sum: f64 = 0.;
         for i in 0..n {
-           sum += compress_int(i, bit_count) as f64;
+            sum += compress_int(i, bit_count) as f64;
         }
         sum /= n as f64;
-        let expect : f64 = (n-1) as f64/2.;
+        let expect: f64 = (n - 1) as f64 / 2.;
 
         assert_relative_eq!(sum, expect, epsilon = eps);
     }
