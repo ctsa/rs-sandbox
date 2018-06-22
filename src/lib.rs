@@ -1,11 +1,12 @@
-
 extern crate num;
 
 use num::{Integer, PrimInt, Unsigned};
 
-use std::mem::size_of;
 use std::ops::{Shl, Shr};
 
+fn is_low_bit_set<T: PrimInt>(input: T) -> bool {
+    (input & T::one()) == T::one()
+}
 
 /// Compress integer input so that higher resolution is preserved for
 /// values near zero, while reducing systematic bias between input and
@@ -41,8 +42,10 @@ where
     assert!(bit_count > 0);
 
     // find last bit (should match POSIX fls() function)
-    let input_bit_count = (size_of::<T>() * 8) as u32;
-    let high_bit_index = input_bit_count - input.leading_zeros();
+    let mut high_bit_index: u32 = 0;
+    while (input >> high_bit_index) != T::zero() {
+        high_bit_index += 1;
+    }
 
     if high_bit_index <= bit_count {
         return input;
@@ -56,18 +59,18 @@ where
     // scheme 2: suffix is 0b01111...
     let mut suffix = T::one() << (shift - 1);
 
-    if (if bit_count == 1 {
-        shift.trailing_zeros()
+    let adjust_suffix = if bit_count == 1 {
+        is_low_bit_set(shift)
     } else {
-        prefix.trailing_zeros()
-    }) == 0
-    {
+        is_low_bit_set(prefix)
+    };
+
+    if adjust_suffix {
         suffix = suffix - T::one();
     }
 
     (prefix << shift) | suffix
 }
-
 
 #[cfg(test)]
 #[macro_use]
